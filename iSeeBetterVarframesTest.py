@@ -13,6 +13,7 @@ import time
 import cv2
 import math
 import logger
+import copy
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
@@ -65,11 +66,59 @@ if args.model_type == 'RBPN':
     raw_model = RBPN(num_channels=3, base_filter=256, feat=64, num_stages=3, n_resblock=5, nFrames= default_model_n_frames,#args.nFrames,
                  scale_factor=args.upscale_factor)
 
-#print([a for a in dir(raw_model) if not callable(getattr(raw_model, a))])
-print(raw_model.feat0)
-
 fine_model = RBPN(num_channels=3, base_filter=256, feat=64, num_stages=3, n_resblock=5, nFrames= args.nFrames,
                  scale_factor=args.upscale_factor)
+
+#print([a for a in dir(raw_model) if not callable(getattr(raw_model, a))])
+
+
+#    if scale_factor == 2:
+ #       kernel = 6
+  #      stride = 2
+   #     padding = 2
+#    elif scale_factor == 4:
+#        kernel = 8
+#        stride = 4
+#        padding = 2
+#    elif scale_factor == 8:
+#        kernel = 12
+#        stride = 8
+#        padding = 2
+
+fine_model.feat0 = copy.deepcopy(raw_model.feat0)
+fine_model.feat1 = copy.deepcopy(raw_model.feat1)
+
+fine_model.DBPN = copy.deepcopy(raw_model.DBPN)
+
+fine_model.res_feat1 = copy.deepcopy(raw_model.res_feat1)
+
+fine_model.res_feat2 = copy.deepcopy(raw_model.res_feat2)
+
+fine_model.res_feat3 = copy.deepcopy(raw_model.res_feat3)
+
+print("WEIGHT SHAPE", raw_model.output.conv.weight.shape)
+print("BIAS SHAPE", raw_model.output.conv.bias.shape)
+
+fine_model.output.conv.weight = raw_model.output.conv.weight[:, 0:args.nFrames * 128, :, :]
+fine_model.output.conv.bias = raw_model.output.conv.bias[0:args.nFrames, :]
+
+    # Reconstruction
+#    self.output = ConvBlock((nFrames - 1) * feat, num_channels, 3, 1, 1, activation=None, norm=None)
+#model.tsa_fusion.fea_fusion.weight = copy.deepcopy(torch.nn.Parameter(raw_model.tsa_fusion.fea_fusion.weight[:, 0:N_in * 128, :, :]))
+#    for m in self.modules():
+#        classname = m.__class__.__name__
+#        if classname.find('Conv2d') != -1:
+#            torch.nn.init.kaiming_normal_(m.weight)
+#            if m.bias is not None:
+#                m.bias.data.zero_()
+#        elif classname.find('ConvTranspose2d') != -1:
+#            torch.nn.init.kaiming_normal_(m.weight)
+#            if m.bias is not None:
+#                m.bias.data.zero_()
+
+
+
+
 
 if cuda:
     model = torch.nn.DataParallel(raw_model, device_ids=gpus_list)
