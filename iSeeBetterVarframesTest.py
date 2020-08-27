@@ -65,7 +65,8 @@ if args.model_type == 'RBPN':
     raw_model = RBPN(num_channels=3, base_filter=256, feat=64, num_stages=3, n_resblock=5, nFrames= default_model_n_frames,#args.nFrames,
                  scale_factor=args.upscale_factor)
 
-print([a for a in dir(raw_model) if not callable(getattr(raw_model, a))])
+#print([a for a in dir(raw_model) if not callable(getattr(raw_model, a))])
+print(raw_model.feat0)
 
 fine_model = RBPN(num_channels=3, base_filter=256, feat=64, num_stages=3, n_resblock=5, nFrames= args.nFrames,
                  scale_factor=args.upscale_factor)
@@ -76,7 +77,7 @@ if cuda:
 device = torch.device("cuda:0" if cuda and torch.cuda.is_available() else "cpu")
 
 if cuda:
-    model = model.cuda(gpus_list[0])
+    model = raw_model.cuda(gpus_list[0])
 
 
 def eval():
