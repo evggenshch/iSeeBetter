@@ -14,6 +14,7 @@ import cv2
 import math
 import logger
 import copy
+from skimage.metrics import structural_similarity as ssim
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
@@ -214,6 +215,10 @@ def PSNR(pred, gt, shave_border=0):
     if rmse == 0:
         return 100
     return 20 * math.log10(255.0 / rmse)
+
+def SSIM(pred, gt):
+    return ssim(pred, gt, multichannel=True)
+
 
 
 def chop_forward(x, neigbor, flow, model, scale, shave=8, min_size=2000, nGPUs=args.gpus):
